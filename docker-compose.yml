@@ -15,6 +15,18 @@ services:
       RUNNING_IN_DOCKER: "true"
     volumes:
       - ./conf:/conf/
+    networks:
+      - traefik-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth-baibaomen-com.rule=Host(`auth.baibaomen.com`)"
+      - "traefik.http.routers.auth-baibaomen-com.entrypoints=websecure"
+      - "traefik.http.routers.auth-baibaomen-com.tls.certresolver=myresolver"
+      - "traefik.http.routers.auth-baibaomen-com-http.rule=Host(`auth.baibaomen.com`)"
+      - "traefik.http.routers.auth-baibaomen-com-http.entrypoints=web"
+      - "traefik.http.routers.auth-baibaomen-com-http.middlewares=redirect-to-https"
+      - "traefik.http.services.auth-baibaomen-com.loadbalancer.server.port=8000"
+
   db:
     restart: always
     image: mysql:8.0.25
@@ -24,4 +36,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 123456
     volumes:
-      - /usr/local/docker/mysql:/var/lib/mysql
+      - ./database:/var/lib/mysql
+
+networks:
+  traefik-net:
+    external: true
